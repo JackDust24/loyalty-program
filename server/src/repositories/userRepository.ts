@@ -1,25 +1,25 @@
 import { rpcTransaction, runTransaction } from '../db/transactions';
 import { comparePasswords, hashPassword } from '../utils/helpers';
-import { UserInsert, UserUpdate } from '../utils/types';
+import { UserInsert, UserUpdate, UserWithRole } from '../utils/types';
 import { supabase } from '../db/client';
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '../db/database.types';
 
 // Private helper functions (only visible in this file) TODO
-async function getUserRoleId(
-  client: SupabaseClient<Database>,
-  roleName: string
-) {
-  const { data: role, error } = await client
-    .from('roles')
-    .select('role_id')
-    .eq('name', roleName)
-    .single();
+// async function getUserRoleId(
+//   client: SupabaseClient<Database>,
+//   roleName: string
+// ) {
+//   const { data: role, error } = await client
+//     .from('roles')
+//     .select('role_id')
+//     .eq('name', roleName)
+//     .single();
 
-  if (error || !role) throw new Error(`Role ${roleName} not found`);
-  return role.role_id;
-}
+//   if (error || !role) throw new Error(`Role ${roleName} not found`);
+//   return role.role_id;
+// }
 
 async function verifyUserPassword(
   client: SupabaseClient<Database>,
@@ -84,6 +84,29 @@ export const createUserRepository = (
       .single();
 
     if (error) throw new Error('User not found');
+    return user;
+  },
+
+  findUserByEmail: async (email: string): Promise<UserWithRole> => {
+    const { data: user, error } = await client
+      .from('users')
+      .select(
+        `
+        user_id,
+        email,
+        password_hash,
+        user_roles!inner (
+          roles!inner (
+            name
+          )
+        )
+      `
+      )
+      .eq('email', email)
+      .single();
+
+    if (error || !user) throw new Error('Invalid credentials');
+
     return user;
   },
 

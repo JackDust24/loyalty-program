@@ -1,7 +1,4 @@
-import {
-  createUserRepository,
-  userRepository,
-} from '../repositories/userRepository';
+import { userRepository } from '../repositories/userRepository';
 import { hashPassword, comparePasswords } from '../utils/helpers';
 import { UserRequest, UserInsert, UserGet } from '../utils/types';
 
@@ -27,6 +24,26 @@ export const createUserService = (deps: UserServiceDependencies) => ({
     };
 
     await deps.userRepo.saveUser(user);
+  },
+
+  login: async (email: string, password: string) => {
+    const user = await deps.userRepo.findUserByEmail(email);
+
+    const isPasswordValid = await deps.hashUtil.compare(
+      password,
+      user.password_hash
+    );
+    if (!isPasswordValid) {
+      throw new Error('Invalid credentials');
+    }
+
+    const roleName = user.user_roles[0]?.roles?.name || 'user';
+
+    return {
+      userId: user.user_id,
+      email: user.email,
+      role: roleName,
+    };
   },
 
   getProfile: async (id: string): Promise<UserGet | null> => {

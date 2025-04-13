@@ -13,6 +13,18 @@ const createUserSchema = Joi.object({
   }),
 });
 
+const loginSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.base': 'Email must be a string',
+    'string.email': 'Email must be a valid email address',
+    'any.required': 'Email is required',
+  }),
+  password: Joi.string().required().messages({
+    'string.base': 'Password must be a string',
+    'any.required': 'Password is required',
+  }),
+});
+
 const changePasswordSchema = Joi.object({
   oldPassword: Joi.string().required().messages({
     'string.base': 'Old password must be a string',
@@ -24,4 +36,4 @@ const changePasswordSchema = Joi.object({
   }),
 });
 
-export { createUserSchema, changePasswordSchema };
+export { createUserSchema, changePasswordSchema, loginSchema };

@@ -21,3 +21,14 @@ export {
   ProfileGet,
   UserUpdate,
 };
+
+export type UserWithRole = {
+  user_id: string;
+  email: string;
+  password_hash: string;
+  user_roles: {
+    roles: {
+      name: string;
+    };
+  }[];
+};
